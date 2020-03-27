@@ -15,7 +15,7 @@ check () {
         printf "\n"
         echo "Have a look at the logfile at: $log" >&2
         exit 1
-    elif
+    else
         printf "\e[32mOK\e[0m\n"
     fi
 }

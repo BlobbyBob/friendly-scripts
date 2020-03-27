@@ -1,0 +1,12 @@
+[Unit]
+Description=Backup in several ways
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/bin/true
+ExecStop=/bin/bash /root/backup-sched.sh
+
+[Install]
+WantedBy=multi-user.target
+
