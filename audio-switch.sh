@@ -2,11 +2,11 @@
 
 # Devices to switch between
 declare -a devNames=("alsa_output.pci-0000_0d_00.4.analog-stereo"
-		"alsa_output.usb-Logitech_G533_Gaming_Headset-00.analog-stereo"
+		"alsa_output.usb-Logitech_G533_Gaming_Headset-00.iec958-stereo"
     "alsa_output.pci-0000_0d_00.4.analog-stereo")
-declare -a portNames=("analog-output-lineout" "analog-output" "analog-output-headphones")
+declare -a portNames=("analog-output-lineout" "iec958-stereo-output" "analog-output-headphones")
 declare -a displayNames=("Speakers" "Wireless Headset" "Wired Headset")
-declare -a defaultVolumes=(65535 15000 15000)
+declare -a defaultVolumes=(65535 30000 15000)
 
 # If the output length of the pacmd list-sinks command changes this needs to be adjusted
 sinkInfoSize=70
@@ -24,16 +24,29 @@ do
 done
 
 # Get current input programs indices
-programs=$(pacmd list-sink-inputs| grep "index:" | grep -oE "[0-9]+")
+programs=$(pacmd list-sink-inputs | grep "index:" | grep -oE "[0-9]+")
+
+
+if [[ -n "$DBG" ]]; then
+	echo "[DBG] runningName: '$runningName'"
+	echo "[DBG] runningPort: '$runningPort'"
+	echo "[DBG] index: '$index'"
+fi
 
 # Get next available device+port
 new=$index
 while : ; do
 	new=$(( ($new+1) % ${#devNames[@]} ))
 	if [[ $new == $index ]]; then
+		if [[ -n "$DBG" ]]; then
+			echo "[DBG] No other devices available"
+		fi
 		break # No other device available
 	fi
 	available=$(pacmd list-sinks | grep -A $sinkInfoSize "${devNames[$new]}" | grep -A 8 "ports:" | grep "${portNames[$new]}" | grep -oE "available: [a-z]+" | grep -oE ": [a-z]+" | grep -oE "[a-z]+")
+	if [[ -n "$DBG" ]]; then
+		echo "[DBG] available: $available (${devNames[$new]})"
+	fi
 	if [[ "$available" == "yes" ]] || [[ "$available" == "unknown" ]]; then
 
 		# Move inputs if device changes
@@ -44,9 +57,9 @@ while : ; do
 		fi
 
 		pacmd set-sink-volume "${devNames[$new]}" ${defaultVolumes[$new]}
-		pacmd set-sink-port "${devNames[$new]}" "$portNames[$new]"
+		pacmd set-sink-port "${devNames[$new]}" "${portNames[$new]}"
 		pacmd set-default-sink "${devNames[$new]}"
-		notify-send 'Audio Switch' "Current device: ${displayNames[$new]}" --icon=audio-volume-high
+		#notify-send 'Audio Switch' "Current device: ${displayNames[$new]}" --icon=audio-volume-high
 		break
 	fi
 done
