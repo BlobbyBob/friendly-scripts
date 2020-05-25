@@ -23,14 +23,14 @@ fi
 
 # TODO: Encrypt Full A Backup
 lastFullA=$(grep "fulla" "$config" | grep -oE "^[0-9]+")
-if [[ -z "$lastFullA" ]] || [[ "$(( $now - $lastFullA ))" -ge "$(( 60 * 60 * 24 * 7 * 90 ))" ]]; then
+if [[ -z "$lastFullA" ]] || [[ "$(( $now - $lastFullA ))" -ge "$(( 60 * 60 * 24 * 90 ))" ]]; then
     $backupSh --full 0 || exit 1
     (echo "$sched" | grep -v "fulla"; echo "$now fulla") | tee "$config"
     exit 0
 fi
 
 lastFullB=$(grep "fullb" "$config" | grep -oE "^[0-9]+")
-if [[ -z "$lastFullB" ]] || [[ "$(( $now - $lastFullB ))" -ge "$(( 60 * 60 * 24 * 7 * 30 ))" ]]; then
+if [[ -z "$lastFullB" ]] || [[ "$(( $now - $lastFullB ))" -ge "$(( 60 * 60 * 24 * 30 ))" ]]; then
     $backupSh --full 1 || exit 1
     (echo "$sched" | grep -v "fullb"; echo "$now fullb") | tee "$config"
     exit 0
